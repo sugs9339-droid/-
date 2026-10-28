@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기사단 컬렉션 - 세노 공식 굿즈 모음</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts (Noto Sans KR) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans KR', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              cream: '#FFF7CC',
+              blue: '#DCEEFF',
+              border: '#7DA7D9',
+              card: '#FFFFFF',
+              dark: '#2F4860'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(47, 72, 96, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #7DA7D9;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-[#DCEEFF]/50 dark:bg-slate-900 text-[#2F4860] dark:text-slate-100 min-h-screen transition-colors duration-200 font-sans flex flex-col">
+
+  <!-- Header Section -->
+  <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-[#7DA7D9]/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo / Title -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+        <div class="w-10 h-10 rounded-xl bg-[#2F4860] flex items-center justify-center text-[#FFF7CC] shadow-md shadow-[#2F4860]/20">
+          <i class="fa-solid fa-shield-halved text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-black text-lg sm:text-xl tracking-tight text-[#2F4860] dark:text-[#FFF7CC]">
+            기사단 컬렉션
+          </h1>
+          <p class="text-[11px] text-[#2F4860]/70 dark:text-slate-400 hidden sm:block">세노 공식 굿즈 모음</p>
+        </div>
+      </div>
+
+      <!-- Search Input -->
+      <div class="flex-1 max-w-md relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7DA7D9] text-sm"></i>
+        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="굿즈 이름 검색" 
+          class="w-full pl-10 pr-4 py-2 text-sm rounded-full bg-[#DCEEFF]/60 dark:bg-slate-800 border border-[#7DA7D9]/40 focus:ring-2 focus:ring-[#7DA7D9] outline-none text-[#2F4860] dark:text-slate-100 placeholder-[#7DA7D9] transition-all">
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-2">
+        <button onclick="toggleGithubGuideModal()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-[#2F4860] text-white hover:bg-[#2F4860]/90 transition flex items-center gap-1.5">
+          <i class="fa-brands fa-github text-sm text-[#FFF7CC]"></i>
+          <span class="hidden md:inline">GitHub Pages 안내</span>
+        </button>
+        <button id="themeToggleBtn" onclick="toggleDarkMode()" class="w-9 h-9 rounded-lg bg-[#DCEEFF] dark:bg-slate-800 text-[#2F4860] dark:text-slate-300 hover:bg-[#FFF7CC] dark:hover:bg-slate-700 transition flex items-center justify-center border border-[#7DA7D9]/30">
+          <i class="fa-solid fa-moon dark:hidden"></i>
+          <i class="fa-solid fa-sun hidden dark:block text-[#FFF7CC]"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- Collection Progress Dashboard -->
+    <div class="bg-[#FFF7CC] dark:bg-slate-800 text-[#2F4860] dark:text-white rounded-2xl p-5 sm:p-6 shadow-md border-2 border-[#7DA7D9]/40 relative overflow-hidden">
+      <!-- Background decorative lights -->
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#DCEEFF]/80 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#2F4860] text-[#FFF7CC]">수집현황</span>
+            <span id="userStatusBadge" class="text-xs text-[#2F4860]/80 dark:text-slate-300 font-medium">Local Save Active</span>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black tracking-tight text-[#2F4860] dark:text-[#FFF7CC]">뺑윙 얼마나 모았어?</h2>
+        </div>
+
+        <!-- Quick Stats Cards -->
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <div class="flex-1 md:flex-initial bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-xl p-3 border border-[#7DA7D9]/30 text-center min-w-[90px] shadow-sm">
+            <div class="text-xs text-[#7DA7D9] font-bold">총 굿즈</div>
+            <div id="statTotalCount" class="text-lg font-black text-[#2F4860] dark:text-white">0</div>
+          </div>
+          <div class="flex-1 md:flex-initial bg-[#2F4860] text-white backdrop-blur-md rounded-xl p-3 border border-[#2F4860] text-center min-w-[90px] shadow-sm">
+            <div class="text-xs text-[#FFF7CC] font-bold">소장 중</div>
+            <div id="statOwnedCount" class="text-lg font-black text-[#FFF7CC]">0</div>
+          </div>
+          <div class="flex-1 md:flex-initial bg-white/90 dark:bg-slate-900/60 backdrop-blur-md rounded-xl p-3 border border-[#7DA7D9]/30 text-center min-w-[90px] shadow-sm">
+            <div class="text-xs text-rose-600 font-bold">위시리스트</div>
+            <div id="statWishCount" class="text-lg font-black text-rose-600 dark:text-pink-400">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="mt-4 pt-3 border-t border-[#7DA7D9]/30">
+        <div class="flex justify-between items-center text-xs text-[#2F4860] dark:text-slate-200 mb-1.5 font-bold">
+          <span>전체 달성률</span>
+          <span id="progressPercentageText" class="font-black text-[#2F4860] dark:text-[#FFF7CC]">0%</span>
+        </div>
+        <div class="w-full h-3.5 bg-white dark:bg-slate-900 rounded-full overflow-hidden p-0.5 border border-[#7DA7D9]/40">
+          <div id="progressBar" class="h-full bg-[#2F4860] dark:bg-[#FFF7CC] rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="space-y-4 bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm border border-[#7DA7D9]/30">
+      
+      <!-- Year Tabs (Requested order: 전체연도, 2023년 이전, 2024년, 2025년, 2026년, 2027년) -->
+      <div>
+        <label class="text-xs font-extrabold text-[#2F4860] dark:text-slate-300 uppercase tracking-wider block mb-2">
+          <i class="fa-regular fa-calendar-check mr-1 text-[#7DA7D9]"></i> 출시 연도별 보기
+        </label>
+        <div id="yearTabs" class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <!-- JS generated buttons will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Sub Filters: Category & Collection View -->
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#DCEEFF] dark:border-slate-700/50">
+        
+        <!-- Merch Type Category -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <span class="text-xs text-[#7DA7D9] font-bold mr-1 hidden sm:inline">종류:</span>
+          <div id="categoryBadges" class="flex items-center gap-1.5">
+            <!-- JS generated category filters -->
+          </div>
+        </div>
+
+        <!-- Personal Collection Filter Toggle (소장함/위시 모아보기) -->
+        <div class="flex items-center gap-1 bg-[#DCEEFF]/50 dark:bg-slate-900 p-1 rounded-xl text-xs font-medium border border-[#7DA7D9]/30">
+          <button onclick="setCollectionFilter('all')" id="colFilter-all" class="col-filter-btn active px-3 py-1.5 rounded-lg transition text-[#2F4860] font-bold">
+            전체
+          </button>
+          <button onclick="setCollectionFilter('owned')" id="colFilter-owned" class="col-filter-btn px-3 py-1.5 rounded-lg transition flex items-center gap-1 text-[#2F4860]">
+            <i class="fa-solid fa-check text-emerald-600"></i> 소장함
+          </button>
+          <button onclick="setCollectionFilter('wish')" id="colFilter-wish" class="col-filter-btn px-3 py-1.5 rounded-lg transition flex items-center gap-1 text-[#2F4860]">
+            <i class="fa-solid fa-heart text-rose-500"></i> 위시리스트
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Filter Summary & Reset -->
+    <div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 px-1 font-medium">
+      <div>
+        총 <span id="goodsCountDisplay" class="font-bold text-[#2F4860] dark:text-[#FFF7CC]">0</span>개의 굿즈가 표시됨
+      </div>
+      <button onclick="resetFilters()" class="hover:text-[#2F4860] dark:hover:text-[#FFF7CC] underline flex items-center gap-1">
+        <i class="fa-solid fa-rotate-left"></i> 필터 초기화
+      </button>
+    </div>
+
+    <!-- Goods Grid Container -->
+    <div id="goodsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <!-- Goods cards will be dynamically rendered here -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16 space-y-3 bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-[#7DA7D9]">
+      <div class="w-16 h-16 bg-[#DCEEFF] dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto text-[#2F4860] text-2xl">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h3 class="text-base font-bold text-[#2F4860] dark:text-slate-200">검색 조건에 맞는 굿즈가 없습니다.</h3>
+      <p class="text-xs text-slate-500">다른 연도나 검색어로 다시 시도해 보세요.</p>
+      <button onclick="resetFilters()" class="px-4 py-2 text-xs font-bold text-white bg-[#2F4860] hover:bg-[#2F4860]/90 rounded-xl transition">
+        필터 초기화하기
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 bg-white dark:bg-slate-900 border-t border-[#7DA7D9]/30 py-8">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
+      <p class="text-xs text-slate-600 dark:text-slate-400 font-medium">
+        기사단 컬렉션 - 세노 공식 굿즈 모음 아카이브입니다.
+      </p>
+      <div class="flex justify-center gap-4 text-xs text-slate-400">
+        <button onclick="toggleGithubGuideModal()" class="hover:underline text-[#2F4860] font-bold">GitHub Pages 배포 가이드</button>
+        <span>•</span>
+        <button onclick="resetUserDataConfirm()" class="hover:underline text-rose-500">내 체크리스트 초기화</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border-2 border-[#7DA7D9]/40 flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header Image -->
+      <div class="relative h-64 bg-[#DCEEFF] dark:bg-slate-900 overflow-hidden group">
+        <img id="modalImage" src="" alt="" class="w-full h-full object-cover">
+        <button onclick="closeModal()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-[#2F4860] text-[#FFF7CC] hover:bg-[#2F4860]/80 transition flex items-center justify-center backdrop-blur-sm shadow-md">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+        
+        <div class="absolute bottom-3 left-3 flex gap-2">
+          <span id="modalYearBadge" class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#2F4860] text-[#FFF7CC]"></span>
+          <span id="modalCategoryBadge" class="px-2.5 py-1 rounded-md text-xs font-bold bg-[#FFF7CC] text-[#2F4860]"></span>
+          <span id="modalStatusBadge" class="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-600 text-white"></span>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div>
+          <h2 id="modalTitle" class="text-xl font-black text-[#2F4860] dark:text-white"></h2>
+          <div class="flex items-center gap-3 mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+            <span><i class="fa-regular fa-calendar mr-1 text-[#7DA7D9]"></i>출시: <span id="modalReleaseDate"></span></span>
+            <span>•</span>
+            <span class="font-extrabold text-[#2F4860] dark:text-[#FFF7CC]"><i class="fa-solid fa-tag mr-1 text-[#7DA7D9]"></i><span id="modalPrice"></span>원</span>
+          </div>
+        </div>
+
+        <p id="modalDescription" class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-[#DCEEFF]/40 dark:bg-slate-900/50 p-3.5 rounded-xl border border-[#7DA7D9]/20"></p>
+
+        <!-- Tags -->
+        <div class="space-y-1.5">
+          <div class="text-xs font-bold text-[#7DA7D9] uppercase">태그</div>
+          <div id="modalTags" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
+        <!-- Checkbox actions in modal -->
+        <div class="pt-3 border-t border-[#DCEEFF] dark:border-slate-700 flex items-center justify-between gap-3">
+          <button id="modalOwnedBtn" class="flex-1 py-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-check"></i> <span>소장함 추가</span>
+          </button>
+          <button id="modalWishBtn" class="flex-1 py-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-heart"></i> <span>위시리스트</span>
+          </button>
+        </div>
+
+        <!-- Official Link -->
+        <a id="modalStoreLink" href="#" target="_blank" rel="noopener noreferrer" 
+          class="w-full py-3 bg-[#2F4860] hover:bg-[#2F4860]/90 text-[#FFF7CC] text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#2F4860]/25">
+          <span>공식 판매처 방문하기</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GitHub Pages Guide Modal -->
+  <div id="githubGuideModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-6 overflow-hidden shadow-2xl border-2 border-[#7DA7D9]/40 space-y-4">
+      <div class="flex items-center justify-between border-b border-[#DCEEFF] dark:border-slate-700 pb-3">
+        <h3 class="text-lg font-bold text-[#2F4860] dark:text-white flex items-center gap-2">
+          <i class="fa-brands fa-github text-[#2F4860] dark:text-[#FFF7CC]"></i>
+          <span>GitHub Pages (무료 주소) 배포 방법</span>
+        </h3>
+        <button onclick="toggleGithubGuideModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-600 dark:text-slate-300 space-y-3 leading-relaxed max-h-[60vh] overflow-y-auto pr-1">
+        <p class="font-bold text-[#2F4860] dark:text-[#FFF7CC]">서버 비용 0원으로 `your-id.github.io` 형태의 나만의 굿즈 사이트를 만드실 수 있습니다!</p>
+        
+        <ol class="list-decimal pl-4 space-y-2">
+          <li><strong>GitHub 회원가입 및 저장소(Repository) 생성:</strong>
+            <br>GitHub 로그인 후 <code class="bg-[#DCEEFF] dark:bg-slate-700 px-1 py-0.5 rounded text-[#2F4860] dark:text-[#FFF7CC]">New repository</code> 생성 (예: <code class="bg-[#DCEEFF] dark:bg-slate-700 px-1 py-0.5 rounded text-[#2F4860] dark:text-[#FFF7CC]">seno-goods</code>).
+          </li>
+          <li><strong>index.html 파일 업로드 및 수정 방법:</strong>
+            <br>이 코드를 복사하여 <code class="bg-[#DCEEFF] dark:bg-slate-700 px-1 py-0.5 rounded text-[#2F4860] dark:text-[#FFF7CC]">index.html</code> 이름으로 저장소에 업로드합니다.
+            <br><span class="text-[#7DA7D9] font-bold">💡 깃허브 배포 후에도 언제든지 index.html을 편집(Edit)하여 로고, 텍스트, 굿즈 목록을 자유롭게 수정하실 수 있습니다.</span>
+          </li>
+          <li><strong>GitHub Pages 활성화:</strong>
+            <br>저장소 <code class="bg-[#DCEEFF] dark:bg-slate-700 px-1 py-0.5 rounded">Settings</code> → <code class="bg-[#DCEEFF] dark:bg-slate-700 px-1 py-0.5 rounded">Pages</code> → Branch를 <strong>main</strong>으로 지정 후 Save.
+          </li>
+          <li><strong>배포 완료!</strong>
+            <br>1~2분 뒤 <code class="bg-[#DCEEFF] dark:bg-slate-700 px-1 py-0.5 rounded text-[#2F4860] dark:text-[#FFF7CC]">https://your-id.github.io/seno-goods/</code> 주소로 접속 가능합니다.
+          </li>
+        </ol>
+
+        <div class="bg-[#FFF7CC] p-3 rounded-xl border border-[#7DA7D9]/30 text-[11px] text-[#2F4860]">
+          💡 <strong>굿즈 데이터 수정 방법:</strong> 코드 내부의 <code class="font-bold">SAMPLE_GOODS</code> 배열 항목의 제목, 이미지URL, 가격, 연도 등을 수정하여 저장(Commit)하면 즉시 사이트에 반영됩니다!
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="toggleGithubGuideModal()" class="w-full py-2.5 bg-[#2F4860] text-[#FFF7CC] font-bold text-xs rounded-xl transition shadow-md">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // ==========================================
+    // 1. 스트리머 굿즈 데이터 베이스 (자유롭게 수정 가능)
+    // ==========================================
+    const SAMPLE_GOODS = [
+      {
+        id: "g2027_01",
+        year: 2027,
+        category: "아크릴",
+        title: "2027 기사단 신년 캘린더 & 아크릴 스탠드",
+        price: 22000,
+        releaseDate: "2027-01-01",
+        status: "예약 판매",
+        imageUrl: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80",
+        description: "2027년 세노 기사단 한정판 탁상 캘린더와 아크릴 세트입니다.",
+        tags: ["2027", "신년", "아크릴"],
+        storeUrl: "https://tobeol.com"
+      },
+      {
+        id: "g2026_01",
+        year: 2026,
+        category: "의류",
+        title: "세노 기사단 자수 볼캡 & 패치 세트",
+        price: 34000,
+        releaseDate: "2026-03-15",
+        status: "공식 판매중",
+        imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=600&auto=format&fit=crop&q=80",
+        description: "기사단 로고 자수가 들어간 시그니처 딥블루 볼캡입니다.",
+        tags: ["의류", "볼캡", "기사단"],
+        storeUrl: "https://tobeol.com"
+      },
+      {
+        id: "g2025_01",
+        year: 2025,
+        category: "피규어/인형",
+        title: "세노 마스코트 20cm 솜인형",
+        price: 32000,
+        releaseDate: "2025-11-20",
+        status: "품절",
+        imageUrl: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&auto=format&fit=crop&q=80",
+        description: "부드러운 극세사 원단으로 제작된 세노 캐릭터 솜인형.",
+        tags: ["솜인형", "인형", "마스코트"],
+        storeUrl: "https://tobeol.com"
+      },
+      {
+        id: "g2025_02",
+        year: 2025,
+        category: "문구/잡화",
+        title: "세노 공식 장패드 (풀컬러 3mm)",
+        price: 22000,
+        releaseDate: "2025-08-10",
+        status: "공식 판매중",
+        imageUrl: "https://images.unsplash.com/photo-1616588589676-63b3bd497957?w=600&auto=format&fit=crop&q=80",
+        description: "방수 코팅 처리된 800x300mm 대형 게이밍 장패드.",
+        tags: ["장패드", "데스크테리어"],
+        storeUrl: "https://tobeol.com"
+      },
+      {
+        id: "g2024_01",
+        year: 2024,
+        category: "음반/기타",
+        title: "세노 100만 구독자 기념 LP 바이닐",
+        price: 48000,
+        releaseDate: "2024-10-05",
+        status: "품절",
+        imageUrl: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=600&auto=format&fit=crop&q=80",
+        description: "시그널 송과 미공개 음원이 수록된 한정판 LP.",
+        tags: ["LP", "음반", "기념굿즈"],
+        storeUrl: "https://tobeol.com"
+      },
+      {
+        id: "g2023_01",
+        year: 2023,
+        category: "아크릴",
+        title: "데뷔 1주년 메모리얼 아크릴 디오라마",
+        price: 25000,
+        releaseDate: "2023-09-12",
+        status: "품절",
+        imageUrl: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=600&auto=format&fit=crop&q=80",
+        description: "3단 입체 아크릴 디오라마 세트.",
+        tags: ["1주년", "아크릴"],
+        storeUrl: "https://tobeol.com"
+      }
+    ];
+
+    // ==========================================
+    // 2. State Management (상태 관리)
+    // ==========================================
+    let activeYear = "ALL";        
+    let activeCategory = "ALL";    
+    let activeCollectionFilter = "all"; 
+    let searchQuery = "";
+
+    let userOwned = new Set(JSON.parse(localStorage.getItem('my_owned_goods') || '[]'));
+    let userWish = new Set(JSON.parse(localStorage.getItem('my_wish_goods') || '[]'));
+
+    const CATEGORIES = ["전체", "아크릴", "의류", "문구/잡화", "피규어/인형", "음반/기타"];
+
+    // ==========================================
+    // 3. Initialization & Setup
+    // ==========================================
+    window.onload = function() {
+      if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      renderYearTabs();
+      renderCategoryBadges();
+      renderApp();
+    };
+
+    function saveUserData() {
+      localStorage.setItem('my_owned_goods', JSON.stringify(Array.from(userOwned)));
+      localStorage.setItem('my_wish_goods', JSON.stringify(Array.from(userWish)));
+      updateDashboardStats();
+    }
+
+    // ==========================================
+    // 4. Filter Component Renderers (Requested Year Order)
+    // ==========================================
+    function renderYearTabs() {
+      const yearTabsContainer = document.getElementById('yearTabs');
+      
+      // Requested order: 전체연도 -> 2023년 이전 -> 2024년 -> 2025년 -> 2026년 -> 2027년
+      const yearOptions = [
+        { label: '전체연도', value: 'ALL' },
+        { label: '2023년 이전', value: '2023_BEFORE' },
+        { label: '2024년', value: 2024 },
+        { label: '2025년', value: 2025 },
+        { label: '2026년', value: 2026 },
+        { label: '2027년', value: 2027 }
+      ];
+
+      yearTabsContainer.innerHTML = yearOptions.map(opt => {
+        const isActive = activeYear === opt.value;
+        return `
+          <button onclick="setYearFilter('${opt.value}')" class="year-tab-btn font-bold px-4 py-2 rounded-xl text-xs sm:text-sm whitespace-nowrap transition ${
+            isActive 
+            ? 'bg-[#2F4860] text-[#FFF7CC] shadow-md shadow-[#2F4860]/20 font-black' 
+            : 'bg-[#DCEEFF]/60 dark:bg-slate-700 text-[#2F4860] dark:text-slate-300 hover:bg-[#FFF7CC]'
+          }">
+            ${opt.label}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderCategoryBadges() {
+      const container = document.getElementById('categoryBadges');
+      container.innerHTML = CATEGORIES.map(cat => {
+        const catKey = cat === "전체" ? "ALL" : cat;
+        const isActive = activeCategory === catKey;
+        return `
+          <button onclick="setCategoryFilter('${catKey}')" class="px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
+            isActive 
+            ? 'bg-[#2F4860] text-white' 
+            : 'bg-[#DCEEFF]/50 dark:bg-slate-700/60 text-[#2F4860] dark:text-slate-400 hover:bg-[#DCEEFF]'
+          }">
+            ${cat}
+          </button>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // 5. Grid Card & App Rendering Logic
+    // ==========================================
+    function getFilteredData() {
+      return SAMPLE_GOODS.filter(item => {
+        // 1. Year Filter
+        if (activeYear !== 'ALL') {
+          if (activeYear === '2023_BEFORE') {
+            if (item.year > 2023) return false;
+          } else {
+            if (item.year !== parseInt(activeYear) && item.year !== activeYear) return false;
+          }
+        }
+
+        // 2. Category Filter
+        if (activeCategory !== 'ALL' && item.category !== activeCategory) {
+          return false;
+        }
+
+        // 3. Collection Filter
+        if (activeCollectionFilter === 'owned' && !userOwned.has(item.id)) return false;
+        if (activeCollectionFilter === 'wish' && !userWish.has(item.id)) return false;
+
+        // 4. Search Filter
+        if (searchQuery.trim() !== '') {
+          const q = searchQuery.toLowerCase();
+          const matchTitle = item.title.toLowerCase().includes(q);
+          const matchCategory = item.category.toLowerCase().includes(q);
+          const matchTags = item.tags.some(t => t.toLowerCase().includes(q));
+          if (!matchTitle && !matchCategory && !matchTags) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderApp() {
+      const filtered = getFilteredData();
+      const grid = document.getElementById('goodsGrid');
+      const emptyState = document.getElementById('emptyState');
+      
+      document.getElementById('goodsCountDisplay').innerText = filtered.length;
+      updateDashboardStats();
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      grid.innerHTML = filtered.map(item => {
+        const isOwned = userOwned.has(item.id);
+        const isWish = userWish.has(item.id);
+
+        let statusBg = "bg-emerald-600 text-white";
+        if (item.status === "품절") statusBg = "bg-rose-600 text-white";
+        if (item.status === "예약 판매") statusBg = "bg-[#2F4860] text-[#FFF7CC]";
+
+        return `
+          <div class="group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-[#7DA7D9]/30 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col relative">
+            
+            <!-- Image Area -->
+            <div class="relative h-48 bg-[#DCEEFF] dark:bg-slate-900 overflow-hidden cursor-pointer" onclick="openModal('${item.id}')">
+              <img src="${item.imageUrl}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
+              
+              <!-- Badges on Image -->
+              <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#2F4860] text-[#FFF7CC] shadow-sm">${item.year}</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FFF7CC] text-[#2F4860] shadow-sm">${item.category}</span>
+              </div>
+
+              <span class="absolute top-3 right-3 px-2 py-0.5 rounded-md text-[10px] font-bold ${statusBg} shadow-sm">
+                ${item.status}
+              </span>
+            </div>
+
+            <!-- Card Content -->
+            <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <h3 onclick="openModal('${item.id}')" class="font-bold text-sm text-[#2F4860] dark:text-slate-100 hover:underline transition line-clamp-2 cursor-pointer">
+                  ${item.title}
+                </h3>
+                <div class="mt-2 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                  <span>${item.releaseDate} 출시</span>
+                  <span class="font-black text-[#2F4860] dark:text-[#FFF7CC] text-sm">${item.price.toLocaleString()}원</span>
+                </div>
+              </div>
+
+              <!-- Interactive Buttons: 소장함 / 위시리스트 -->
+              <div class="pt-3 border-t border-[#DCEEFF] dark:border-slate-700/60 flex items-center justify-between gap-2">
+                
+                <!-- Owned Toggle Button -->
+                <button onclick="toggleOwned('${item.id}')" 
+                  class="flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-1.5 ${
+                    isOwned 
+                    ? 'bg-[#2F4860] text-[#FFF7CC] border-[#2F4860]' 
+                    : 'bg-[#DCEEFF]/40 dark:bg-slate-900/40 border-[#7DA7D9]/30 text-[#2F4860] hover:bg-[#FFF7CC]'
+                  }">
+                  <i class="fa-solid ${isOwned ? 'fa-check-circle text-[#FFF7CC]' : 'fa-check'}"></i>
+                  <span>${isOwned ? '소장 완료' : '소장함'}</span>
+                </button>
+
+                <!-- Wishlist Toggle Button -->
+                <button onclick="toggleWish('${item.id}')" 
+                  class="flex-1 py-1.5 px-2 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-1.5 ${
+                    isWish 
+                    ? 'bg-rose-500 text-white border-rose-500' 
+                    : 'bg-[#DCEEFF]/40 dark:bg-slate-900/40 border-[#7DA7D9]/30 text-rose-600 hover:bg-rose-100'
+                  }">
+                  <i class="fa-solid fa-heart ${isWish ? 'text-white' : ''}"></i>
+                  <span>${isWish ? '위시 등록' : '위시'}</span>
+                </button>
+
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // 6. Stats & Dashboard Update
+    // ==========================================
+    function updateDashboardStats() {
+      const totalCount = SAMPLE_GOODS.length;
+      const ownedCount = userOwned.size;
+      const wishCount = userWish.size;
+
+      const percentage = totalCount > 0 ? Math.round((ownedCount / totalCount) * 100) : 0;
+
+      document.getElementById('statTotalCount').innerText = totalCount;
+      document.getElementById('statOwnedCount').innerText = ownedCount;
+      document.getElementById('statWishCount').innerText = wishCount;
+      
+      document.getElementById('progressPercentageText').innerText = `${percentage}% 달성 (${ownedCount}/${totalCount})`;
+      document.getElementById('progressBar').style.width = `${percentage}%`;
+    }
+
+    // ==========================================
+    // 7. Event Handlers & Toggles
+    // ==========================================
+    function toggleOwned(id) {
+      if (userOwned.has(id)) {
+        userOwned.delete(id);
+      } else {
+        userOwned.add(id);
+      }
+      saveUserData();
+      renderApp();
+    }
+
+    function toggleWish(id) {
+      if (userWish.has(id)) {
+        userWish.delete(id);
+      } else {
+        userWish.add(id);
+      }
+      saveUserData();
+      renderApp();
+    }
+
+    function setYearFilter(yr) {
+      activeYear = yr;
+      renderYearTabs();
+      renderApp();
+    }
+
+    function setCategoryFilter(cat) {
+      activeCategory = cat;
+      renderCategoryBadges();
+      renderApp();
+    }
+
+    function setCollectionFilter(mode) {
+      activeCollectionFilter = mode;
+      
+      document.querySelectorAll('.col-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-[#2F4860]', 'text-white', 'font-bold');
+        btn.classList.add('text-[#2F4860]');
+      });
+
+      const activeBtn = document.getElementById(`colFilter-${mode}`);
+      if(activeBtn) {
+        activeBtn.classList.add('bg-[#2F4860]', 'text-white', 'font-bold');
+        activeBtn.classList.remove('text-[#2F4860]');
+      }
+
+      renderApp();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value;
+      renderApp();
+    }
+
+    function resetFilters() {
+      activeYear = "ALL";
+      activeCategory = "ALL";
+      activeCollectionFilter = "all";
+      searchQuery = "";
+      document.getElementById('searchInput').value = "";
+      
+      renderYearTabs();
+      renderCategoryBadges();
+      setCollectionFilter('all');
+      renderApp();
+    }
+
+    function resetUserDataConfirm() {
+      if(confirm('내 소장함 및 위시리스트 기록을 정말 초기화하시겠습니까?')) {
+        userOwned.clear();
+        userWish.clear();
+        saveUserData();
+        renderApp();
+      }
+    }
+
+    // ==========================================
+    // 8. Modal Controller
+    // ==========================================
+    function openModal(id) {
+      const item = SAMPLE_GOODS.find(g => g.id === id);
+      if(!item) return;
+
+      document.getElementById('modalImage').src = item.imageUrl;
+      document.getElementById('modalTitle').innerText = item.title;
+      document.getElementById('modalYearBadge').innerText = `${item.year}년`;
+      document.getElementById('modalCategoryBadge').innerText = item.category;
+      document.getElementById('modalStatusBadge').innerText = item.status;
+      document.getElementById('modalReleaseDate').innerText = item.releaseDate;
+      document.getElementById('modalPrice').innerText = item.price.toLocaleString();
+      document.getElementById('modalDescription').innerText = item.description;
+      document.getElementById('modalStoreLink').href = item.storeUrl;
+
+      // Render Tags
+      document.getElementById('modalTags').innerHTML = item.tags.map(t => 
+        `<span class="px-2 py-0.5 rounded-full text-[11px] bg-[#DCEEFF] text-[#2F4860] font-bold">#${t}</span>`
+      ).join('');
+
+      // Render Modal Buttons
+      const isOwned = userOwned.has(item.id);
+      const isWish = userWish.has(item.id);
+
+      const ownedBtn = document.getElementById('modalOwnedBtn');
+      ownedBtn.className = `flex-1 py-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+        isOwned ? 'bg-[#2F4860] text-[#FFF7CC] border-[#2F4860]' : 'border-[#7DA7D9]/50 text-[#2F4860] hover:bg-[#DCEEFF]'
+      }`;
+      ownedBtn.onclick = () => { toggleOwned(item.id); openModal(item.id); };
+      ownedBtn.querySelector('span').innerText = isOwned ? '소장 중' : '소장함에 추가';
+
+      const wishBtn = document.getElementById('modalWishBtn');
+      wishBtn.className = `flex-1 py-2.5 rounded-xl text-xs font-bold border transition flex items-center justify-center gap-2 ${
+        isWish ? 'bg-rose-500 text-white border-rose-500' : 'border-rose-300 text-rose-600 hover:bg-rose-50'
+      }`;
+      wishBtn.onclick = () => { toggleWish(item.id); openModal(item.id); };
+      wishBtn.querySelector('span').innerText = isWish ? '위시 중' : '위시리스트에 추가';
+
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    function toggleGithubGuideModal() {
+      const modal = document.getElementById('githubGuideModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function toggleDarkMode() {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+  </script>
+</body>
+</html>
